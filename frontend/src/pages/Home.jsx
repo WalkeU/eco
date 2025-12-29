@@ -14,6 +14,10 @@ export default function Home() {
   const { isAuthenticated } = useAuth()
 
   useEffect(() => {
+    if (!isAuthenticated) navigate("/auth")
+  }, [isAuthenticated, navigate])
+
+  useEffect(() => {
     const fetchGraphs = async () => {
       try {
         setLoading(true)
