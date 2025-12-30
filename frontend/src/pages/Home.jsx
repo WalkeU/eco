@@ -12,11 +12,7 @@ export default function Home() {
   const [error, setError] = useState(null)
   const [query, setQuery] = useState("")
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
-
-  useEffect(() => {
-    if (!isAuthenticated) navigate("/auth")
-  }, [isAuthenticated, navigate])
+  const { user, isAuthenticated } = useAuth()
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -42,6 +38,14 @@ export default function Home() {
       ),
     [graphs, query]
   )
+
+  if (user === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-gray-500 text-lg">Betöltés...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

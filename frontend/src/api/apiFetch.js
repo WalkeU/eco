@@ -1,13 +1,14 @@
 import axios from "axios"
 
+// Saját axios példány, minden kérésnél withCredentials: true
+export const apiClient = axios.create({
+  withCredentials: true,
+})
+
 // General API fetch utility using axios
-// Supports httpOnly cookie-based auth (withCredentials)
-// If you use httpOnly cookies, token param is not needed
 export const apiFetch = (url, config = {}) => {
-  const token = localStorage.getItem("accessToken")
   const headers = { ...(config.headers || {}) }
-  if (token) headers["Authorization"] = `Bearer ${token}`
-  return axios({
+  return apiClient({
     url,
     ...config,
     headers,

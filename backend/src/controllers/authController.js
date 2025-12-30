@@ -31,8 +31,13 @@ exports.login = async (req, res) => {
     if (!ok) return res.status(401).json({ error: "invalid credentials" })
 
     const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: "12h" })
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 12 * 60 * 60 * 1000,
+    })
     res.json({
-      accessToken: token,
       user: { id: user.id, username: user.username, email: user.email, created_at: user.created_at },
     })
   } catch (err) {

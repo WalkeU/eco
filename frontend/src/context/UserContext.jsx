@@ -1,48 +1,32 @@
-import { apiFetch } from "../api/apiFetch"
-const ApiFetch = (input, init = {}) => {
-  return apiFetch(input, token, init)
-}
 import React, { createContext, useContext, useEffect, useState } from "react"
 import * as userApi from "../api/user"
 
 const UserContext = createContext(null)
 
 export function UserProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem("accessToken"))
-  const [user, setUser] = useState(() => {
-    const u = localStorage.getItem("user")
-    return u ? JSON.parse(u) : null
-  })
-
-  useEffect(() => {
-    if (token) localStorage.setItem("accessToken", token)
-    else localStorage.removeItem("accessToken")
-  }, [token])
-
-  useEffect(() => {
-    if (user) localStorage.setItem("user", JSON.stringify(user))
-    else localStorage.removeItem("user")
-  }, [user])
+  // undefined: töltődik, null: nincs user, {…}: be van jelentkezve
+  const [user, setUser] = useState(undefined)
 
   const login = async ({ username, password }) => {
-    const body = await userApi.login({ username, password })
-    setToken(body.accessToken)
-    setUser(body.user)
-    return body
+    await userApi.login({ username, password })
+    await fetchUser()
   }
 
   const register = async ({ username, email, password }) => {
-    return userApi.register({ username, email, password })
+    await userApi.register({ username, email, password })
+    await fetchUser()
   }
 
-  const logout = () => {
-    setToken(null)
+  const logout = async () => {
+    // Ha van logout endpoint, hívd meg itt
     setUser(null)
   }
 
   const fetchUser = async () => {
+    // loading screen szebb legyen produkcioban legyen kis delay mindig
+    // await new Promise((r) => setTimeout(r, 1500))
     try {
-      const res = await userApi.getMe(token)
+      const res = await userApi.getMe()
       setUser(res.data)
     } catch (err) {
       setUser(null)
@@ -50,13 +34,11 @@ export function UserProvider({ children }) {
   }
 
   useEffect(() => {
-    if (token) fetchUser()
-  }, [token])
+    fetchUser()
+  }, [])
 
   return (
-    <UserContext.Provider
-      value={{ user, token, login, register, logout, isAuthenticated: !!token, ApiFetch }}
-    >
+    <UserContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
       {children}
     </UserContext.Provider>
   )

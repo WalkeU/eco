@@ -6,12 +6,6 @@ import { useAuth } from "../context/UserContext"
 export default function Upload() {
   const fileInputRef = useRef(null)
   const [filesLabel, setFilesLabel] = useState("")
-  const { isAuthenticated } = useAuth()
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (!isAuthenticated) navigate("/auth")
-  }, [isAuthenticated, navigate])
 
   const handleBrowse = () => fileInputRef.current?.click()
   const handleFiles = (e) => {
