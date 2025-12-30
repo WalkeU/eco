@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 import * as userApi from "../api/user"
+import { setGlobalLogoutHandler } from "../api/apiFetch"
 
 const UserContext = createContext(null)
 
@@ -18,7 +19,9 @@ export function UserProvider({ children }) {
   }
 
   const logout = async () => {
-    // Ha van logout endpoint, hívd meg itt
+    try {
+      await userApi.logout()
+    } catch {}
     setUser(null)
   }
 
@@ -26,7 +29,7 @@ export function UserProvider({ children }) {
     // loading screen szebb legyen produkcioban legyen kis delay mindig
     // await new Promise((r) => setTimeout(r, 1500))
     try {
-      const res = await userApi.getMe()
+      const res = await userApi.getMe({ skipRefresh: true })
       setUser(res.data)
     } catch (err) {
       setUser(null)
@@ -34,6 +37,10 @@ export function UserProvider({ children }) {
   }
 
   useEffect(() => {
+    // Beállítjuk a globális logout handlert
+    setGlobalLogoutHandler(() => {
+      setUser(null)
+    })
     fetchUser()
   }, [])
 
