@@ -1,10 +1,13 @@
+import { apiFetch } from "../api/apiFetch"
+const ApiFetch = (input, init = {}) => {
+  return apiFetch(input, token, init)
+}
 import React, { createContext, useContext, useEffect, useState } from "react"
+import * as userApi from "../api/user"
 
 const UserContext = createContext(null)
 
 export function UserProvider({ children }) {
-  const apiBase = import.meta.env.VITE_API_BASE
-
   const [token, setToken] = useState(() => localStorage.getItem("accessToken"))
   const [user, setUser] = useState(() => {
     const u = localStorage.getItem("user")
@@ -22,27 +25,14 @@ export function UserProvider({ children }) {
   }, [user])
 
   const login = async ({ username, password }) => {
-    const res = await fetch(`${apiBase}/user/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    })
-    const body = await res.json()
-    if (!res.ok) throw new Error(body.error || "Login failed")
+    const body = await userApi.login({ username, password })
     setToken(body.accessToken)
     setUser(body.user)
     return body
   }
 
   const register = async ({ username, email, password }) => {
-    const res = await fetch(`${apiBase}/user/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
-    })
-    const body = await res.json()
-    if (!res.ok) throw new Error(body.error || "Registration failed")
-    return body
+    return userApi.register({ username, email, password })
   }
 
   const logout = () => {
@@ -50,50 +40,22 @@ export function UserProvider({ children }) {
     setUser(null)
   }
 
-  // helper fetch that includes Authorization header when available
-  const authFetch = (input, init = {}) => {
-    const headers = Object.assign({}, init.headers || {})
-    if (token) headers["Authorization"] = `Bearer ${token}`
-    return fetch(input, Object.assign({}, init, { headers })).then((res) => {
-      if (res.status === 401) {
-        // token invalid or expired -> logout immediately
-        logout()
-      }
-      return res
-    })
+  const fetchUser = async () => {
+    try {
+      const res = await userApi.getMe(token)
+      setUser(res.data)
+    } catch (err) {
+      setUser(null)
+    }
   }
 
-  // validate token on startup / when token changes
-  // change mounted to abortcontroller to improve!!!!!!!!!!!!!
   useEffect(() => {
-    let mounted = true
-    if (!token) return
-    ;(async () => {
-      try {
-        const res = await authFetch(`${apiBase}/user/me`)
-        if (!res.ok) {
-          if (res.status === 401) {
-            // token invalid or expired
-            logout()
-          }
-          return
-        }
-        const data = await res.json()
-        if (mounted) setUser(data)
-      } catch (err) {
-        console.error("auth validation failed", err)
-        logout()
-      }
-    })()
-
-    return () => {
-      mounted = false
-    }
+    if (token) fetchUser()
   }, [token])
 
   return (
     <UserContext.Provider
-      value={{ user, token, login, register, logout, authFetch, isAuthenticated: !!token }}
+      value={{ user, token, login, register, logout, isAuthenticated: !!token, ApiFetch }}
     >
       {children}
     </UserContext.Provider>

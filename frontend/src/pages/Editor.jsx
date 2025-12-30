@@ -6,45 +6,36 @@ import Canvas from "../components/Canvas.jsx"
 import Navbar from "../components/Navbar.jsx"
 import Sidebar from "../components/Sidebar.jsx"
 import NodeInfo from "../components/NodeInfo.jsx"
+
 import { useAuth } from "../context/UserContext.jsx"
+import { fetchGraph } from "../api/graph"
 
 // Editor: lekéri a gráfot a backendből és a `Graph` komponensnek a `graph` propban adja át.
 function Editor() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated, authFetch } = useAuth()
+  const { isAuthenticated } = useAuth()
   const [graph, setGraph] = useState(null)
   const [activeNodeId, setActiveNodeId] = useState(null)
 
   // Lekérés a backendről. A Vite env-ben beállítható `VITE_API_BASE`.
-  const API_BASE = import.meta.env.VITE_API_BASE
   useEffect(() => {
-    // AbortController a fetch megszakításához
-    // Ha nincs id, vagy nincs autentikáció, akkor megszakítjuk a fetch-t
-    // Ez arra jó, hogy ne próbáljunk meg fetch-elni, ha nincs szükség rá
-    // És ne legyen alert a konzolban (lehet hosszu fetch)
     const ac = new AbortController()
     if (!id) return () => ac.abort()
-
     if (!isAuthenticated) {
       navigate("/auth")
       return () => ac.abort()
     }
-
     ;(async () => {
       try {
-        const res = await authFetch(`${API_BASE}/graphs/${id}`, { signal: ac.signal })
-        const text = await res.text()
-        if (!res.ok) throw new Error(`Failed to fetch graph: ${res.status} ${text}`)
-        const g = JSON.parse(text)
+        const g = await fetchGraph(id, { signal: ac.signal })
         setGraph(g)
       } catch (err) {
         if (err.name !== "AbortError") console.error("Error fetching graph:", err)
       }
     })()
-
     return () => ac.abort()
-  }, [API_BASE, id, isAuthenticated, navigate])
+  }, [id, isAuthenticated, navigate])
 
   // Node pozíció frissítése: a Graph komponens public id-t ad vissza (client_id vagy szám)
   const handleNodePositionChange = (publicId, x, y) => {
