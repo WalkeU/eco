@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 
-const AuthContext = createContext(null)
+const UserContext = createContext(null)
 
-export function AuthProvider({ children }) {
+export function UserProvider({ children }) {
   const apiBase = import.meta.env.VITE_API_BASE
 
   const [token, setToken] = useState(() => localStorage.getItem("accessToken"))
@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
   }, [user])
 
   const login = async ({ username, password }) => {
-    const res = await fetch(`${apiBase}/auth/login`, {
+    const res = await fetch(`${apiBase}/user/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -35,7 +35,7 @@ export function AuthProvider({ children }) {
   }
 
   const register = async ({ username, email, password }) => {
-    const res = await fetch(`${apiBase}/users`, {
+    const res = await fetch(`${apiBase}/user/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password }),
@@ -54,16 +54,23 @@ export function AuthProvider({ children }) {
   const authFetch = (input, init = {}) => {
     const headers = Object.assign({}, init.headers || {})
     if (token) headers["Authorization"] = `Bearer ${token}`
-    return fetch(input, Object.assign({}, init, { headers }))
+    return fetch(input, Object.assign({}, init, { headers })).then((res) => {
+      if (res.status === 401) {
+        // token invalid or expired -> logout immediately
+        logout()
+      }
+      return res
+    })
   }
 
   // validate token on startup / when token changes
+  // change mounted to abortcontroller to improve!!!!!!!!!!!!!
   useEffect(() => {
     let mounted = true
     if (!token) return
     ;(async () => {
       try {
-        const res = await authFetch(`${apiBase}/auth/me`)
+        const res = await authFetch(`${apiBase}/user/me`)
         if (!res.ok) {
           if (res.status === 401) {
             // token invalid or expired
@@ -85,18 +92,18 @@ export function AuthProvider({ children }) {
   }, [token])
 
   return (
-    <AuthContext.Provider
+    <UserContext.Provider
       value={{ user, token, login, register, logout, authFetch, isAuthenticated: !!token }}
     >
       {children}
-    </AuthContext.Provider>
+    </UserContext.Provider>
   )
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider")
+  const ctx = useContext(UserContext)
+  if (!ctx) throw new Error("useUser must be used within UserProvider")
   return ctx
 }
 
-export default AuthContext
+export default UserContext

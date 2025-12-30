@@ -30,7 +30,7 @@ exports.login = async (req, res) => {
     const ok = await bcrypt.compare(password, user.password_hash)
     if (!ok) return res.status(401).json({ error: "invalid credentials" })
 
-    const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET || "change-me", { expiresIn: "1h" })
+    const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: "12h" })
     res.json({
       accessToken: token,
       user: { id: user.id, username: user.username, email: user.email, created_at: user.created_at },
@@ -48,7 +48,7 @@ exports.me = async (req, res) => {
     const user = await userService.getUserById(userId)
     if (!user) return res.status(404).json({ error: "not found" })
     // only return safe fields
-    res.json({ id: user.id, username: user.username, email: user.email, created_at: user.created_at })
+    res.json({ id: user.id, username: user.username, email: user.email })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: "server error" })

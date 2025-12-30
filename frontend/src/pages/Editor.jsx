@@ -6,13 +6,13 @@ import Canvas from "../components/Canvas.jsx"
 import Navbar from "../components/Navbar.jsx"
 import Sidebar from "../components/Sidebar.jsx"
 import NodeInfo from "../components/NodeInfo.jsx"
-import { useAuth } from "../context/AuthContext.jsx"
+import { useAuth } from "../context/UserContext.jsx"
 
 // Editor: lekéri a gráfot a backendből és a `Graph` komponensnek a `graph` propban adja át.
 function Editor() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, authFetch } = useAuth()
   const [graph, setGraph] = useState(null)
   const [activeNodeId, setActiveNodeId] = useState(null)
 
@@ -33,7 +33,7 @@ function Editor() {
 
     ;(async () => {
       try {
-        const res = await fetch(`${API_BASE}/graphs/${id}`, { signal: ac.signal })
+        const res = await authFetch(`${API_BASE}/graphs/${id}`, { signal: ac.signal })
         const text = await res.text()
         if (!res.ok) throw new Error(`Failed to fetch graph: ${res.status} ${text}`)
         const g = JSON.parse(text)
