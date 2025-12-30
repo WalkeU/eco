@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react"
 import Navbar from "../components/Navbar"
 import { useNavigate } from "react-router-dom"
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../context/UserContext"
+import { fetchGraphs } from "../api/graph"
 
 const API_URL = import.meta.env.VITE_API_BASE
 
@@ -14,12 +15,14 @@ export default function Home() {
   const { isAuthenticated } = useAuth()
 
   useEffect(() => {
-    const fetchGraphs = async () => {
+    if (!isAuthenticated) navigate("/auth")
+  }, [isAuthenticated, navigate])
+
+  useEffect(() => {
+    const fetchAll = async () => {
       try {
         setLoading(true)
-        const res = await fetch(`${API_URL}/graphs`)
-        if (!res.ok) throw new Error("Nem sikerült lekérni a gráfokat")
-        const data = await res.json()
+        const data = await fetchGraphs()
         setGraphs(data)
       } catch (err) {
         setError(err.message)
@@ -27,7 +30,7 @@ export default function Home() {
         setLoading(false)
       }
     }
-    fetchGraphs()
+    fetchAll()
   }, [])
 
   const filtered = useMemo(

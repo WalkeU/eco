@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "../context/UserContext"
 
 export default function Auth() {
   const [mode, setMode] = useState("login") // 'login' or 'register'
@@ -10,6 +11,7 @@ export default function Auth() {
   const navigate = useNavigate()
 
   const apiBase = import.meta.env.VITE_API_BASE
+  const { login, register } = useAuth()
 
   const submit = async (e) => {
     e.preventDefault()
@@ -17,32 +19,12 @@ export default function Auth() {
 
     try {
       if (mode === "register") {
-        const res = await fetch(`${apiBase}/users`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, email, password }),
-        })
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}))
-          throw new Error(body.error || "Registration failed")
-        }
-        // After register, switch to login
+        await register({ username, email, password })
         setMode("login")
         return
       }
 
-      // login
-      const res = await fetch(`${apiBase}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      })
-      const body = await res.json()
-      if (!res.ok) throw new Error(body.error || "Login failed")
-
-      // store token and user
-      localStorage.setItem("accessToken", body.accessToken)
-      localStorage.setItem("user", JSON.stringify(body.user))
+      await login({ username, password })
       navigate("/")
     } catch (err) {
       setError(err.message)
