@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react"
-import { useLocation } from "react-router-dom"
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react"
 import * as userApi from "../api/user"
 import { setGlobalLogoutHandler } from "../api/apiFetch"
 
@@ -8,8 +7,7 @@ const UserContext = createContext(null)
 export function UserProvider({ children }) {
   // undefined: töltődik, null: nincs user, {…}: be van jelentkezve
   const [user, setUser] = useState(undefined)
-  const location = useLocation()
-  useEffect(() => {}, [user])
+  const [isLoading, setIsLoading] = useState(false)
 
   const login = async ({ username, password }) => {
     await userApi.login({ username, password })
@@ -28,32 +26,31 @@ export function UserProvider({ children }) {
     setUser(null)
   }
 
-  const fetchUser = async () => {
-    // loading screen szebb legyen produkcioban legyen kis delay mindig
-    // await new Promise((r) => setTimeout(r, 1500))
+  const fetchUser = useCallback(async () => {
+    if (isLoading) return // Ne indítsunk több párhuzamos fetchet
+
+    setIsLoading(true)
     try {
       const res = await userApi.getMe()
       setUser(res.data)
     } catch (err) {
       setUser(null)
+    } finally {
+      setIsLoading(false)
     }
-  }
+  }, [isLoading])
 
   useEffect(() => {
     // Beállítjuk a globális logout handlert
     setGlobalLogoutHandler(() => {
       setUser(null)
     })
-    fetchUser()
   }, [])
 
-  // Új: minden route váltásnál frissítjük a user-t
-  useEffect(() => {
-    fetchUser()
-  }, [location])
-
   return (
-    <UserContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
+    <UserContext.Provider
+      value={{ user, isLoading, login, register, logout, fetchUser, isAuthenticated: !!user }}
+    >
       {children}
     </UserContext.Provider>
   )

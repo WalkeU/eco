@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/UserContext"
 
@@ -11,7 +11,14 @@ export default function Auth() {
   const navigate = useNavigate()
 
   const apiBase = import.meta.env.VITE_API_BASE
-  const { login, register } = useAuth()
+  const { login, register, isAuthenticated } = useAuth()
+
+  // Ha a user be van jelentkezve, irányítsuk át a főoldalra
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/")
+    }
+  }, [isAuthenticated, navigate])
 
   const submit = async (e) => {
     e.preventDefault()
