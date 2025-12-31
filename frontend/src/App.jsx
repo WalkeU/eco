@@ -5,6 +5,7 @@ import Upload from "./pages/Upload"
 import Auth from "./pages/Auth"
 import Test from "./pages/Test"
 import ProtectedRoute from "./routes/ProtectedRoute"
+import PublicRoute from "./routes/PublicRoute"
 
 function App() {
   return (
@@ -33,7 +34,14 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/auth" element={<Auth />} />
+      <Route
+        path="/auth"
+        element={
+          <PublicRoute>
+            <Auth />
+          </PublicRoute>
+        }
+      />
       <Route path="/test" element={<Test />} />
     </Routes>
   )

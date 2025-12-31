@@ -3,7 +3,7 @@ import { Navigate, useLocation } from "react-router-dom"
 import { useAuth } from "../context/UserContext"
 import LoadingScreen from "../components/loaders/LoadingScreen"
 
-export default function ProtectedRoute({ children }) {
+export default function PublicRoute({ children }) {
   const { user, fetchUser, isLoading } = useAuth()
   const location = useLocation()
 
@@ -19,11 +19,11 @@ export default function ProtectedRoute({ children }) {
     return <LoadingScreen />
   }
 
-  if (user === null) {
-    // Not authenticated, redirect
-    return <Navigate to="/auth" replace />
+  if (user !== null) {
+    // Already authenticated, redirect to home
+    return <Navigate to="/" replace />
   }
 
-  // Authenticated
+  // Not authenticated, allow access
   return children
 }

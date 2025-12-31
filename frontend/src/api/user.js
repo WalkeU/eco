@@ -28,10 +28,15 @@ export const getMe = async (config = {}) => {
 }
 
 export const refresh = async () => {
-  const res = await apiFetch(`${apiBase}/user/refresh`, {
-    method: "POST",
-  })
-  return res.data
+  try {
+    const res = await apiFetch(`${apiBase}/user/refresh`, {
+      method: "POST",
+    })
+    return res.data
+  } catch (err) {
+    // Itt ne logolj semmit, csak dobj vissza null-t vagy false-t
+    return null
+  }
 }
 
 export const logout = async () => {
