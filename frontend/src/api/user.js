@@ -19,9 +19,24 @@ export const register = async ({ username, email, password }) => {
   return res.data
 }
 
-export const getMe = async () => {
+export const getMe = async (config = {}) => {
   const res = await apiFetch(`${apiBase}/user/me`, {
     method: "GET",
+    ...config,
   })
   return res
+}
+
+export const refresh = async () => {
+  const res = await apiFetch(`${apiBase}/user/refresh`, {
+    method: "POST",
+  })
+  return res.data
+}
+
+export const logout = async () => {
+  const res = await apiFetch(`${apiBase}/user/logout`, {
+    method: "POST",
+  })
+  return res.data
 }

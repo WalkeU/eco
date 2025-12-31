@@ -1,48 +1,40 @@
-import { apiFetch } from "../api/apiFetch"
-const ApiFetch = (input, init = {}) => {
-  return apiFetch(input, token, init)
-}
 import React, { createContext, useContext, useEffect, useState } from "react"
+import { useLocation } from "react-router-dom"
 import * as userApi from "../api/user"
+import { setGlobalLogoutHandler } from "../api/apiFetch"
 
 const UserContext = createContext(null)
 
 export function UserProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem("accessToken"))
-  const [user, setUser] = useState(() => {
-    const u = localStorage.getItem("user")
-    return u ? JSON.parse(u) : null
-  })
-
+  // undefined: töltődik, null: nincs user, {…}: be van jelentkezve
+  const [user, setUser] = useState(undefined)
+  const location = useLocation()
   useEffect(() => {
-    if (token) localStorage.setItem("accessToken", token)
-    else localStorage.removeItem("accessToken")
-  }, [token])
-
-  useEffect(() => {
-    if (user) localStorage.setItem("user", JSON.stringify(user))
-    else localStorage.removeItem("user")
+    console.log("[UserContext] user state changed:", user)
   }, [user])
 
   const login = async ({ username, password }) => {
-    const body = await userApi.login({ username, password })
-    setToken(body.accessToken)
-    setUser(body.user)
-    return body
+    await userApi.login({ username, password })
+    await fetchUser()
   }
 
   const register = async ({ username, email, password }) => {
-    return userApi.register({ username, email, password })
+    await userApi.register({ username, email, password })
+    await fetchUser()
   }
 
-  const logout = () => {
-    setToken(null)
+  const logout = async () => {
+    try {
+      await userApi.logout()
+    } catch {}
     setUser(null)
   }
 
   const fetchUser = async () => {
+    // loading screen szebb legyen produkcioban legyen kis delay mindig
+    // await new Promise((r) => setTimeout(r, 1500))
     try {
-      const res = await userApi.getMe(token)
+      const res = await userApi.getMe()
       setUser(res.data)
     } catch (err) {
       setUser(null)
@@ -50,13 +42,20 @@ export function UserProvider({ children }) {
   }
 
   useEffect(() => {
-    if (token) fetchUser()
-  }, [token])
+    // Beállítjuk a globális logout handlert
+    setGlobalLogoutHandler(() => {
+      setUser(null)
+    })
+    fetchUser()
+  }, [])
+
+  // Új: minden route váltásnál frissítjük a user-t
+  useEffect(() => {
+    fetchUser()
+  }, [location])
 
   return (
-    <UserContext.Provider
-      value={{ user, token, login, register, logout, isAuthenticated: !!token, ApiFetch }}
-    >
+    <UserContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
       {children}
     </UserContext.Provider>
   )
