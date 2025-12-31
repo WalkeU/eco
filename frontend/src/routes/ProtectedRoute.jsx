@@ -6,15 +6,7 @@ import * as userApi from "../api/user"
 
 export default function ProtectedRoute({ children }) {
   const { user } = useAuth()
-
-  useEffect(() => {
-    // Token ellenőrzés - ha lejárt, 401-et kap és az interceptor kirúgja
-    if (user) {
-      userApi.getMe().catch(() => {
-        // Ha hiba van, nem csinálunk semmit, az interceptor már kezeli
-      })
-    }
-  }, [user])
+  console.log("[ProtectedRoute] user:", user)
 
   if (user === undefined) {
     // Loading state

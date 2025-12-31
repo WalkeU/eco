@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
+import { useLocation } from "react-router-dom"
 import * as userApi from "../api/user"
 import { setGlobalLogoutHandler } from "../api/apiFetch"
 
@@ -7,6 +8,10 @@ const UserContext = createContext(null)
 export function UserProvider({ children }) {
   // undefined: töltődik, null: nincs user, {…}: be van jelentkezve
   const [user, setUser] = useState(undefined)
+  const location = useLocation()
+  useEffect(() => {
+    console.log("[UserContext] user state changed:", user)
+  }, [user])
 
   const login = async ({ username, password }) => {
     await userApi.login({ username, password })
@@ -29,7 +34,7 @@ export function UserProvider({ children }) {
     // loading screen szebb legyen produkcioban legyen kis delay mindig
     // await new Promise((r) => setTimeout(r, 1500))
     try {
-      const res = await userApi.getMe({ skipRefresh: true })
+      const res = await userApi.getMe()
       setUser(res.data)
     } catch (err) {
       setUser(null)
@@ -43,6 +48,11 @@ export function UserProvider({ children }) {
     })
     fetchUser()
   }, [])
+
+  // Új: minden route váltásnál frissítjük a user-t
+  useEffect(() => {
+    fetchUser()
+  }, [location])
 
   return (
     <UserContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
