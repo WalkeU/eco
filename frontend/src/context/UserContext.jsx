@@ -9,9 +9,7 @@ export function UserProvider({ children }) {
   // undefined: töltődik, null: nincs user, {…}: be van jelentkezve
   const [user, setUser] = useState(undefined)
   const location = useLocation()
-  useEffect(() => {
-    console.log("[UserContext] user state changed:", user)
-  }, [user])
+  useEffect(() => {}, [user])
 
   const login = async ({ username, password }) => {
     await userApi.login({ username, password })
