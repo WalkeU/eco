@@ -33,11 +33,10 @@ async function seed() {
       userId = uRes.insertId
     }
 
-    const [gRes] = await conn.query("INSERT INTO graphs (name, description, created_by) VALUES (?, ?, ?)", [
-      "Sample Graph",
-      "This is a seeded example graph",
-      userId,
-    ])
+    const [gRes] = await conn.query(
+      "INSERT INTO graphs (name, description, tag, created_by) VALUES (?, ?, ?, ?)",
+      ["Sample Graph", "This is a seeded example graph", "test", userId]
+    )
     const graphId = gRes.insertId
 
     const nodes = [

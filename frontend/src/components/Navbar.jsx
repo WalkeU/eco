@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom"
 
 const buttons = [
   { label: "Home", to: "/" },
+  { label: "Create", to: "/create" },
   { label: "Upload", to: "/upload" },
 ]
 

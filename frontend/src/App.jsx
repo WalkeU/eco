@@ -4,6 +4,7 @@ import Home from "./pages/Home"
 import Upload from "./pages/Upload"
 import Auth from "./pages/Auth"
 import Test from "./pages/Test"
+import CreateGraph from "./pages/CreateGraph"
 import ProtectedRoute from "./routes/ProtectedRoute"
 import PublicRoute from "./routes/PublicRoute"
 
@@ -23,6 +24,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Editor />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/create"
+        element={
+          <ProtectedRoute>
+            <CreateGraph />
           </ProtectedRoute>
         }
       />

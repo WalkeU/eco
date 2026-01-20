@@ -107,7 +107,7 @@ export default function Home() {
 
                   <div className="w-32 text-right">
                     <span className="inline-block px-3 py-1 text-sm rounded-full font-medium bg-gray-100 text-gray-800">
-                      {row.description || "No description"}
+                      {row.tag || "No tag"}
                     </span>
                   </div>
                 </div>

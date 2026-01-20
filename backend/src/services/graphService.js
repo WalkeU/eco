@@ -45,14 +45,23 @@ const createGraph = async (payload) => {
   }
 }
 
+// ez arra kell hogy amikor csak a metaadatokat kell ellenorizni (pl. jogosultsag)
 const getRawGraph = async (id) => {
   const [rows] = await pool.query("SELECT * FROM graphs WHERE id = ? LIMIT 1", [id])
   return rows && rows.length ? rows[0] : null
 }
 
+const listGraphs = async ({ created_by } = {}) => {
+  // ATMENETILEG AZ OSSZUES USER HOZZAFER AZ OSSZES GRAFHOZ
+  const [rows] = await pool.query(
+    "SELECT id, name, description, tag, created_by, created_at, updated_at FROM graphs"
+  )
+  return rows
+}
+
 const getGraphById = async (id) => {
   const [gRows] = await pool.query(
-    "SELECT id, name, description, created_by, created_at, updated_at FROM graphs WHERE id = ? LIMIT 1",
+    "SELECT id, name, description, tag, created_by, created_at, updated_at FROM graphs WHERE id = ? LIMIT 1",
     [id]
   )
   if (!gRows || !gRows.length) return null
@@ -75,28 +84,14 @@ const getGraphById = async (id) => {
   return { ...graph, nodes, edges }
 }
 
-const listGraphs = async ({ created_by } = {}) => {
-  if (created_by) {
-    const [rows] = await pool.query(
-      "SELECT id, name, description, created_by, created_at, updated_at FROM graphs WHERE created_by = ?",
-      [created_by]
-    )
-    return rows
-  }
-  const [rows] = await pool.query(
-    "SELECT id, name, description, created_by, created_at, updated_at FROM graphs"
-  )
-  return rows
-}
-
 const updateGraph = async (id, payload) => {
-  const { name, description, nodes = [], edges = [] } = payload
+  const { name, description, tag, nodes = [], edges = [] } = payload
   const conn = await pool.getConnection()
   try {
     await conn.beginTransaction()
     await conn.query(
-      "UPDATE graphs SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-      [name, description || null, id]
+      "UPDATE graphs SET name = ?, description = ?, tag = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [name, description || null, tag || null, id]
     )
     await conn.query("DELETE FROM edges WHERE graph_id = ?", [id])
     await conn.query("DELETE FROM nodes WHERE graph_id = ?", [id])

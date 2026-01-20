@@ -46,7 +46,7 @@ exports.login = async (req, res) => {
       expiresIn: msToSeconds(ACCESS_TOKEN_AGE_MS),
     })
     const refreshToken = crypto.randomBytes(64).toString("hex")
-    const expiresAt = new Date(Date.now() + 1 * 1 * 1 * 30 * 1000) // 7 days
+    const expiresAt = new Date(Date.now() + REFRESH_TOKEN_AGE_MS)
     await userService.createRefreshToken(user.id, refreshToken, expiresAt)
 
     res.cookie("accessToken", token, {
@@ -104,7 +104,7 @@ exports.refresh = async (req, res) => {
       expiresIn: msToSeconds(ACCESS_TOKEN_AGE_MS),
     })
     const newRefreshToken = crypto.randomBytes(64).toString("hex")
-    const expiresAt = new Date(Date.now() + 1 * 1 * 1 * 30 * 1000)
+    const expiresAt = new Date(Date.now() + REFRESH_TOKEN_AGE_MS)
     await userService.createRefreshToken(tokenData.user_id, newRefreshToken, expiresAt)
 
     res.cookie("accessToken", newAccessToken, {
