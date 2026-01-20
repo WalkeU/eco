@@ -1,15 +1,14 @@
 const pool = require("../db")
 
 const createGraph = async (payload) => {
-  const { name, description, nodes = [], edges = [], created_by } = payload
+  const { name, description, tag, nodes = [], edges = [], created_by } = payload
   const conn = await pool.getConnection()
   try {
     await conn.beginTransaction()
-    const [gRes] = await conn.query("INSERT INTO graphs (name, description, created_by) VALUES (?, ?, ?)", [
-      name,
-      description || null,
-      created_by,
-    ])
+    const [gRes] = await conn.query(
+      "INSERT INTO graphs (name, description, tag, created_by) VALUES (?, ?, ?, ?)",
+      [name, description || null, tag || null, created_by]
+    )
     const graphId = gRes.insertId
 
     const idMap = {}

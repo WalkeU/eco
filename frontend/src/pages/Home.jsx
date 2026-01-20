@@ -14,6 +14,18 @@ export default function Home() {
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "-"
+    const date = new Date(dateString)
+    return date.toLocaleDateString("hu-HU", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  }
+
   useEffect(() => {
     const fetchAll = async () => {
       try {
@@ -48,10 +60,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
       <Navbar />
 
-      <main className="max-w-4xl mx-auto p-6">
+      <main className="max-w-5xl min-w-4xl mx-auto p-6 flex-1 overflow-hidden flex flex-col">
         <h1 className="text-3xl font-bold mb-4">Welcome to Softwarename</h1>
 
         <section className="mb-6">
@@ -65,7 +77,7 @@ export default function Home() {
           />
         </section>
 
-        <section>
+        <section className="flex-1 overflow-y-auto rounded-md">
           <div className="text-sm text-gray-600 mb-3">{filtered.length} results</div>
 
           {loading && <div className="text-center text-gray-500 py-8">Betöltés...</div>}
@@ -92,12 +104,12 @@ export default function Home() {
 
                   <div className="flex-1 px-6">
                     <div className="text-sm text-gray-500">Name</div>
-                    <div className="font-semibold">{row.name}</div>
+                    <div className="font-semibold truncate">{row.name}</div>
                   </div>
 
-                  <div className="w-40 text-sm text-gray-500">
+                  <div className="w-70 text-sm text-gray-500">
                     <div className="">Created at</div>
-                    <div className="text-gray-700">{row.created_at || "-"}</div>
+                    <div className="text-gray-700">{formatDate(row.created_at)}</div>
                   </div>
 
                   <div className="w-36 text-sm text-gray-500">
@@ -106,7 +118,7 @@ export default function Home() {
                   </div>
 
                   <div className="w-32 text-right">
-                    <span className="inline-block px-3 py-1 text-sm rounded-full font-medium bg-gray-100 text-gray-800">
+                    <span className="inline-block px-3 py-1 text-sm rounded-full font-medium bg-gray-100 text-gray-800 max-w-full truncate">
                       {row.tag || "No tag"}
                     </span>
                   </div>

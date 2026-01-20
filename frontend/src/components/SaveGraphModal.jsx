@@ -38,7 +38,7 @@ export default function SaveGraphModal({ isOpen, onClose, graph }) {
       const payload = {
         name: name.trim(),
         description: description.trim(),
-        tag: tag.trim() || null,
+        tag,
         nodes: graph.nodes,
         edges: graph.edges,
         created_by: user.id,
@@ -104,7 +104,7 @@ export default function SaveGraphModal({ isOpen, onClose, graph }) {
             disabled={saving}
             className="px-4 py-2 bg-gray text-white rounded-md hover:bg-gray-hover disabled:opacity-50"
           >
-            {saving ? "Saving..." : "Savse"}
+            {saving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
