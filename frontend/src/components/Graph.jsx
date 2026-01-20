@@ -15,6 +15,7 @@ export default function Graph({
   onNodePositionChange,
   onNodeSelect,
   onEdgeCreate,
+  onEdgeDelete,
   activeNodeId,
   viewBox,
 }) {
@@ -33,9 +34,21 @@ export default function Graph({
     // Prefer client_id (frontend-provided id) if present so Editor's state matches
     const publicId =
       node.client_id != null ? (isFinite(node.client_id) ? Number(node.client_id) : node.client_id) : node.id
-    if (e.shiftKey && activeNodeId && activeNodeId !== publicId && onEdgeCreate) {
-      // Create edge between activeNodeId and publicId
-      onEdgeCreate(activeNodeId, publicId)
+    if (e.shiftKey && activeNodeId && activeNodeId !== publicId) {
+      // Check if edge already exists
+      const usedEdges = graph && graph.edges ? graph.edges : edges || []
+      const existingEdge = usedEdges.find(
+        (edge) =>
+          (edge.from === activeNodeId && edge.to === publicId) ||
+          (edge.from === publicId && edge.to === activeNodeId)
+      )
+      if (existingEdge) {
+        // Delete edge
+        if (onEdgeDelete) onEdgeDelete(activeNodeId, publicId)
+      } else {
+        // Create edge
+        if (onEdgeCreate) onEdgeCreate(activeNodeId, publicId)
+      }
     } else {
       // Normal drag or select
       setDraggedNodeId(publicId)

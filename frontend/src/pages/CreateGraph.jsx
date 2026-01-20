@@ -58,15 +58,29 @@ function CreateGraph() {
     }))
   }
 
+  const handleEdgeDelete = (from, to) => {
+    setGraph((prev) => ({
+      ...prev,
+      edges: prev.edges.filter(
+        (edge) => !(edge.from === from && edge.to === to) && !(edge.from === to && edge.to === from)
+      ),
+    }))
+  }
+
   const handleDrop = (e) => {
     e.preventDefault()
     const data = e.dataTransfer.getData("application/json")
     if (!data) return
     const nodeType = JSON.parse(data)
-    // Pozíció számítása (egyszerűsítve, center környékére)
-    const rect = e.currentTarget.getBoundingClientRect()
-    const x = e.clientX - rect.left - 40 // offset for node size
-    const y = e.clientY - rect.top - 40
+    // Pozíció számítása SVG koordinátákra (pan/zoom figyelembe vételével)
+    const svg = document.querySelector("svg")
+    if (!svg) return
+    const pt = svg.createSVGPoint()
+    pt.x = e.clientX
+    pt.y = e.clientY
+    const cursor = pt.matrixTransform(svg.getScreenCTM().inverse())
+    const x = cursor.x // Node center at cursor
+    const y = cursor.y
     const newNode = {
       client_id: Date.now().toString(), // unique id
       label: nodeType.label,
@@ -92,14 +106,12 @@ function CreateGraph() {
         <NodePalette />
         <div className="flex-1 flex flex-col relative">
           {/* Save gomb a jobb felső sarokban */}
-          <div className="absolute top-4 right-4 z-10">
-            <button
-              onClick={handleOpenModal}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            >
-              Save Graph
-            </button>
-          </div>
+          <button
+            onClick={handleOpenModal}
+            className="absolute top-4 right-4 z-10 font-semibold py-1 px-4 rounded-full bg-gray hover:bg-gray-hover text-white shadow"
+          >
+            Save Graph
+          </button>
           {/* Canvas a gráfhoz */}
           <div
             className="flex-1 flex items-center justify-center relative"
@@ -112,6 +124,7 @@ function CreateGraph() {
                 onNodePositionChange={handleNodePositionChange}
                 onNodeSelect={handleNodeSelect}
                 onEdgeCreate={handleEdgeCreate}
+                onEdgeDelete={handleEdgeDelete}
                 activeNodeId={activeNodeId}
               />
             </Canvas>

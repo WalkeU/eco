@@ -21,7 +21,9 @@ export default function Navbar() {
               key={btn.label}
               to={btn.to}
               className={`font-semibold py-1 px-4 rounded-full ${
-                isActive ? "bg-gray-200 text-black" : "bg-bg hover:bg-bg-hover text-black"
+                isActive
+                  ? "bg-bg-active text-black ring-1 ring-black"
+                  : "bg-bg hover:bg-bg-hover text-black ring-0"
               } ${idx < buttons.length - 1 ? "mr-2" : ""}`}
             >
               {btn.label}
