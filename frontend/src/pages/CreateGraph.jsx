@@ -7,7 +7,6 @@ import Navbar from "../components/Navbar.jsx"
 import NodeInfo from "../components/NodeInfo.jsx"
 import SaveGraphModal from "../components/SaveGraphModal.jsx"
 import NodePalette from "../components/NodePalette.jsx"
-import { createGraph } from "../api/graph"
 
 // CreateGraph: új gráf létrehozására szolgál, üres állapottal indul.
 function CreateGraph() {
@@ -30,6 +29,14 @@ function CreateGraph() {
         if (pid === publicId) return { ...node, x, y }
         return node
       })
+      return { ...prev, nodes }
+    })
+  }
+
+  // Node adatok frissítése
+  const handleNodeUpdate = (updatedNode) => {
+    setGraph((prev) => {
+      const nodes = prev.nodes.map((node) => (node.client_id === updatedNode.client_id ? updatedNode : node))
       return { ...prev, nodes }
     })
   }
@@ -108,7 +115,7 @@ function CreateGraph() {
                 activeNodeId={activeNodeId}
               />
             </Canvas>
-            {activeNode && <NodeInfo node={activeNode} />}
+            {activeNode && <NodeInfo node={activeNode} onUpdate={handleNodeUpdate} />}
           </div>
         </div>
       </div>

@@ -73,7 +73,7 @@ export default function UpdateGraphModal({ isOpen, onClose, graph, graphId, onSu
     >
       <div
         ref={modalRef}
-        className={`bg-white/90 backdrop-blur-md p-6 rounded-lg shadow-lg max-w-md w-full transition-all duration-300 ${
+        className={`bg-white backdrop-blur-md p-6 rounded-lg shadow-lg max-w-md w-full transition-all duration-300 ${
           isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
         }`}
       >
