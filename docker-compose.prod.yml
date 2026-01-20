@@ -28,6 +28,8 @@ services:
       DB_NAME: ${DB_NAME}
       DB_PORT: 3306
       PORT: 3001
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
     ports:
       - "${BACKEND_PORT}:3001"
     depends_on:
