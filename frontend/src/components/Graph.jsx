@@ -14,6 +14,7 @@ export default function Graph({
   graph,
   onNodePositionChange,
   onNodeSelect,
+  onEdgeCreate,
   activeNodeId,
   viewBox,
 }) {
@@ -29,15 +30,21 @@ export default function Graph({
     pt.x = e.clientX
     pt.y = e.clientY
     const cursor = pt.matrixTransform(svg.getScreenCTM().inverse())
-    setDraggedNodeId(node.id)
-    setDragOffset({
-      x: cursor.x - node.x,
-      y: cursor.y - node.y,
-    })
     // Prefer client_id (frontend-provided id) if present so Editor's state matches
     const publicId =
       node.client_id != null ? (isFinite(node.client_id) ? Number(node.client_id) : node.client_id) : node.id
-    if (onNodeSelect) onNodeSelect(publicId)
+    if (e.shiftKey && activeNodeId && activeNodeId !== publicId && onEdgeCreate) {
+      // Create edge between activeNodeId and publicId
+      onEdgeCreate(activeNodeId, publicId)
+    } else {
+      // Normal drag or select
+      setDraggedNodeId(publicId)
+      setDragOffset({
+        x: cursor.x - node.x,
+        y: cursor.y - node.y,
+      })
+      if (onNodeSelect) onNodeSelect(publicId)
+    }
   }
 
   // Drag move & end: window szintű listener
@@ -53,16 +60,8 @@ export default function Graph({
       const cursor = pt.matrixTransform(svg.getScreenCTM().inverse())
       const newX = cursor.x - dragOffset.x
       const newY = cursor.y - dragOffset.y
-      // Map draggedNodeId (db id) to public id if possible
-      const usedNodes = graph && graph.nodes ? graph.nodes : nodes || []
-      const node = usedNodes.find((n) => n.id === draggedNodeId)
-      const publicId =
-        node && node.client_id != null
-          ? isFinite(node.client_id)
-            ? Number(node.client_id)
-            : node.client_id
-          : draggedNodeId
-      if (onNodePositionChange) onNodePositionChange(publicId, newX, newY)
+      // draggedNodeId is already the publicId
+      if (onNodePositionChange) onNodePositionChange(draggedNodeId, newX, newY)
     }
     const handleMouseUp = () => {
       setDraggedNodeId(null)
@@ -83,8 +82,22 @@ export default function Graph({
     <g>
       {/* Edges */}
       {usedEdges.map((edge, i) => {
-        const fromNode = usedNodes.find((n) => n.id === edge.from)
-        const toNode = usedNodes.find((n) => n.id === edge.to)
+        let fromNode = usedNodes.find((n) => n.id === edge.from)
+        if (!fromNode) {
+          fromNode = usedNodes.find((n) => {
+            const pid =
+              n.client_id != null ? (isFinite(n.client_id) ? Number(n.client_id) : n.client_id) : n.id
+            return pid === edge.from
+          })
+        }
+        let toNode = usedNodes.find((n) => n.id === edge.to)
+        if (!toNode) {
+          toNode = usedNodes.find((n) => {
+            const pid =
+              n.client_id != null ? (isFinite(n.client_id) ? Number(n.client_id) : n.client_id) : n.id
+            return pid === edge.to
+          })
+        }
         if (!fromNode || !toNode) return null
         return (
           <line

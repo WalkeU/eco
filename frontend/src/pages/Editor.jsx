@@ -51,15 +51,6 @@ function Editor() {
     })
   }
 
-  // Node adatok frissítése
-  const handleNodeUpdate = (updatedNode) => {
-    setGraph((prev) => {
-      if (!prev) return prev
-      const nodes = prev.nodes.map((node) => (node.id === updatedNode.id ? updatedNode : node))
-      return { ...prev, nodes }
-    })
-  }
-
   // Aktív node beállítása (public id)
   const handleNodeSelect = (publicId) => {
     setActiveNodeId(publicId)
@@ -80,6 +71,15 @@ function Editor() {
     setGraph(updated)
     alert("Gráf elmentve!")
   }
+
+  // Edge létrehozása, de ezt nem akarja a user!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  // const handleEdgeCreate = (from, to) => {
+  //   setGraph((prev) => ({
+  //     ...prev,
+  //     edges: [...prev.edges, { from, to }],
+  //   }))
+  // }
 
   const activeNode =
     graph && graph.nodes
@@ -107,9 +107,11 @@ function Editor() {
               onNodePositionChange={handleNodePositionChange}
               onNodeSelect={handleNodeSelect}
               activeNodeId={activeNodeId}
+              // Edge csinalasa, de ezt nem akarja a user!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+              // onEdgeCreate={handleEdgeCreate}
             />
           </Canvas>
-          {activeNode && <NodeInfo node={activeNode} onUpdate={handleNodeUpdate} />}
+          {activeNode && <NodeInfo node={activeNode} />}
           <UpdateGraphModal
             isOpen={isUpdateModalOpen}
             onClose={handleCloseUpdateModal}

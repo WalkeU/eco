@@ -33,14 +33,6 @@ function CreateGraph() {
     })
   }
 
-  // Node adatok frissítése
-  const handleNodeUpdate = (updatedNode) => {
-    setGraph((prev) => {
-      const nodes = prev.nodes.map((node) => (node.client_id === updatedNode.client_id ? updatedNode : node))
-      return { ...prev, nodes }
-    })
-  }
-
   // Aktív node beállítása
   const handleNodeSelect = (publicId) => {
     setActiveNodeId(publicId)
@@ -57,6 +49,13 @@ function CreateGraph() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
+  }
+
+  const handleEdgeCreate = (from, to) => {
+    setGraph((prev) => ({
+      ...prev,
+      edges: [...prev.edges, { from, to }],
+    }))
   }
 
   const handleDrop = (e) => {
@@ -112,10 +111,11 @@ function CreateGraph() {
                 graph={graph}
                 onNodePositionChange={handleNodePositionChange}
                 onNodeSelect={handleNodeSelect}
+                onEdgeCreate={handleEdgeCreate}
                 activeNodeId={activeNodeId}
               />
             </Canvas>
-            {activeNode && <NodeInfo node={activeNode} onUpdate={handleNodeUpdate} />}
+            {activeNode && <NodeInfo node={activeNode} />}
           </div>
         </div>
       </div>

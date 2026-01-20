@@ -15,6 +15,7 @@ build/
 .env.local
 .env.*.local
 .env.prod
+.env.production
 
 # Database
 *.sqlite3
